@@ -1,0 +1,223 @@
+/**
+ * Sticky Add to Cart - Styles
+ * PrestaShop 1.7 Module
+ */
+
+/* Main sticky container */
+.sticky-add-to-cart {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  transform: translateY(100%);
+  transition: transform 0.3s ease-in-out;
+  border-top: 1px solid #e5e5e5;
+}
+
+.sticky-add-to-cart.visible {
+  transform: translateY(0);
+}
+
+/* Container layout */
+.sticky-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px 20px;
+  gap: 15px;
+}
+
+/* Product info section */
+.sticky-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sticky-product-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sticky-product-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #25b9d7;
+}
+
+/* Actions section */
+.sticky-actions {
+  flex-shrink: 0;
+}
+
+/* Add to cart button */
+.sticky-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  background-color: #25b9d7;
+  color: #ffffff;
+}
+
+.sticky-add-btn:hover {
+  background-color: #1fa3bf;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(37, 185, 215, 0.3);
+}
+
+.sticky-add-btn:active {
+  transform: translateY(0);
+}
+
+.sticky-add-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sticky-add-btn .material-icons {
+  font-size: 20px;
+}
+
+/* Loading state */
+.sticky-add-btn.loading::after {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success message */
+.sticky-success-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #28a745;
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  animation: slideIn 0.3s ease;
+}
+
+.sticky-success-message .material-icons {
+  font-size: 24px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Responsive Design */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .sticky-container {
+    padding: 12px 15px;
+  }
+
+  .sticky-product-name {
+    font-size: 13px;
+  }
+
+  .sticky-product-price {
+    font-size: 16px;
+  }
+
+  .sticky-add-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .sticky-container {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .sticky-product-info {
+    gap: 3px;
+  }
+
+  .sticky-product-name {
+    font-size: 12px;
+  }
+
+  .sticky-product-price {
+    font-size: 14px;
+  }
+
+  .sticky-add-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .sticky-add-btn .material-icons {
+    font-size: 18px;
+  }
+
+  .sticky-btn-text {
+    display: none;
+  }
+
+  .sticky-success-message {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 360px) {
+  .sticky-product-name {
+    max-width: 120px;
+  }
+
+  .sticky-add-btn {
+    padding: 8px 12px;
+  }
+}
