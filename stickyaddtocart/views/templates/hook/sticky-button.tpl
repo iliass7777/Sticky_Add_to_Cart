@@ -24,6 +24,7 @@
                 class="btn btn-primary sticky-add-btn"
                 data-product-id="{$product_id}"
                 data-add-url="{$add_to_cart_url}"
+                data-token="{$token}"
             >
                 <i class="material-icons shopping-cart">shopping_cart</i>
                 <span class="sticky-btn-text">{$button_text}</span>

@@ -1,6 +1,6 @@
 /**
  * Sticky Add to Cart - JavaScript
- * PrestaShop 1.7 Module
+ * PrestaShop 1.7.x Module
  */
 
 (function () {
@@ -17,7 +17,8 @@
     }
 
     // Configuration - Get scroll threshold from data attribute or use default
-    const SCROLL_THRESHOLD = parseInt(stickyBar.getAttribute("data-scroll-threshold")) || 300;
+    const SCROLL_THRESHOLD =
+      parseInt(stickyBar.getAttribute("data-scroll-threshold")) || 300;
     const SUCCESS_MESSAGE_DURATION = 3000; // 3 seconds
 
     /**
@@ -54,6 +55,7 @@
       }
 
       const productId = stickyBtn.getAttribute("data-product-id");
+      const token = stickyBtn.getAttribute("data-token");
 
       // Add loading state
       stickyBtn.classList.add("loading");
@@ -64,6 +66,16 @@
       formData.append("qty", 1);
       formData.append("action", "update");
       formData.append("add", 1);
+      formData.append("ajax", true);
+
+      const addToCartUrl = stickyBtn.getAttribute("data-add-url");
+
+      // Add PrestaShop security token (try from data attribute, then global)
+      if (token) {
+        formData.append("token", token);
+      } else if (typeof prestashop !== "undefined" && prestashop.static_token) {
+        formData.append("token", prestashop.static_token);
+      }
 
       // Get the main add to cart form if it exists (for product customization)
       const mainForm = document.querySelector("#add-to-cart-or-refresh");
@@ -86,7 +98,7 @@
       }
 
       // PrestaShop 1.7 uses prestashop object for AJAX cart updates
-      fetch(prestashop.urls.pages.cart, {
+      fetch(addToCartUrl, {
         method: "POST",
         body: formData,
         headers: {
@@ -94,23 +106,36 @@
         },
       })
         .then(function (response) {
+          if (!response.ok) {
+            throw response;
+          }
           return response.json();
         })
         .then(function (data) {
           // Remove loading state
           stickyBtn.classList.remove("loading");
 
+          if (data.hasError) {
+            console.error("Cart update error:", data.errors);
+            alert("Error: " + data.errors.join("\n"));
+            return;
+          }
+
           // Show success message
           showSuccessMessage();
 
           // Trigger PrestaShop cart update event
-          prestashop.emit("updateCart", {
-            reason: {
-              idProduct: productId,
-              idProductAttribute: formData.get("id_product_attribute") || 0,
-              linkAction: "add-to-cart",
-            },
-          });
+          if (typeof prestashop !== "undefined" && prestashop.emit) {
+            prestashop.emit("updateCart", {
+              reason: {
+                idProduct: productId,
+                idProductAttribute: formData.get("id_product_attribute") || 0,
+                linkAction: "add-to-cart",
+                cart: data.cart,
+              },
+              resp: data,
+            });
+          }
 
           // Update cart preview (if blockcart module is active)
           if (typeof prestashop !== "undefined" && prestashop.blockcart) {
@@ -120,7 +145,37 @@
         .catch(function (error) {
           console.error("Error adding to cart:", error);
           stickyBtn.classList.remove("loading");
-          alert("An error occurred. Please try again.");
+
+          // Use a generic error message by default
+          let errorMessage = "An error occurred. Please try again.";
+
+          // Try to extract more specific error info
+          if (error instanceof Response) {
+            // If it's a fetch response object
+            error.text().then((text) => {
+              console.error("Response text:", text);
+              try {
+                // Try to parse as JSON error
+                const jsonError = JSON.parse(text);
+                if (jsonError.errors && jsonError.errors.length > 0) {
+                  alert("Error: " + jsonError.errors.join("\n"));
+                } else {
+                  alert(
+                    "Server Error: " + error.status + " " + error.statusText,
+                  );
+                }
+              } catch (e) {
+                // Fallback for non-JSON errors (like 500 HTML pages)
+                alert("Server Error: " + error.status + " " + error.statusText);
+              }
+            });
+            return;
+          } else if (error.message) {
+            // JS Error
+            errorMessage += "\nDetails: " + error.message;
+          }
+
+          alert(errorMessage);
         });
     }
 

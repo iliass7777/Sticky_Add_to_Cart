@@ -27,14 +27,11 @@ class StickyAddToCart extends Module
     public $displayName;
     public $description;
     public $confirmUninstall;
-
-
-
     public function __construct()
     {
         $this->name = 'stickyaddtocart';
         $this->tab = 'front_office_features';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'Iliass Haidi';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = [
@@ -479,7 +476,7 @@ class StickyAddToCart extends Module
         // Add dynamic CSS variables
         $customCSS = $this->getCustomCSS();
         $this->context->smarty->assign('sticky_custom_css', $customCSS);
-        
+
         // Add inline CSS
         $inlineCSS = '<style>' . $customCSS . '</style>';
         $this->context->controller->addCSS($this->_path . 'views/css/stickyaddtocart.css', 'all');
@@ -528,7 +525,7 @@ class StickyAddToCart extends Module
     protected function shouldDisplayOnDevice()
     {
         $context = Context::getContext();
-        
+
         // Detect device type
         if ($context->isMobile()) {
             return (bool)Configuration::get('STICKY_ATC_ENABLE_MOBILE');
@@ -611,6 +608,7 @@ class StickyAddToCart extends Module
                 'action' => 'update'
             ]),
             'cart_url' => $this->context->link->getPageLink('cart', true),
+            'token' => Tools::getToken(false),
         ]);
 
         // Return the template
@@ -648,7 +646,7 @@ class StickyAddToCart extends Module
         }
 
         $excludedArray = array_map('intval', array_map('trim', explode(',', $excludedCategories)));
-        
+
         // Get product categories
         $product = new Product($productId);
         $productCategories = $product->getCategories();
