@@ -16,8 +16,8 @@
       return;
     }
 
-    // Configuration
-    const SCROLL_THRESHOLD = 300; // Show after scrolling 300px
+    // Configuration - Get scroll threshold from data attribute or use default
+    const SCROLL_THRESHOLD = parseInt(stickyBar.getAttribute("data-scroll-threshold")) || 300;
     const SUCCESS_MESSAGE_DURATION = 3000; // 3 seconds
 
     /**
