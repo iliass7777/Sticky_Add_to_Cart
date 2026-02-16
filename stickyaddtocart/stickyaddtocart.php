@@ -588,16 +588,42 @@ class StickyAddToCart extends Module
         // Get scroll threshold
         $scrollThreshold = (int)Configuration::get('STICKY_ATC_SCROLL_THRESHOLD');
 
+        // Get manufacturer name
+        $manufacturerName = '';
+        if (isset($product['id_manufacturer']) && $product['id_manufacturer']) {
+            $manufacturerName = Manufacturer::getNameById((int)$product['id_manufacturer']);
+        }
+
+        // Get regular price (if discount exists)
+        $regularPrice = '';
+        if (isset($product['has_discount']) && $product['has_discount']) {
+            $regularPrice = $product['regular_price'];
+        }
+
+        // Try to get a color attribute for the swatch
+        $colorValue = '';
+        if (isset($product['attributes']) && is_array($product['attributes'])) {
+            foreach ($product['attributes'] as $attr) {
+                if (isset($attr['group_type']) && $attr['group_type'] === 'color') {
+                    $colorValue = $attr['html_color_code'];
+                    break;
+                }
+            }
+        }
+
         // Assign variables to template
         $this->context->smarty->assign([
             'product_id' => $productId,
             'product_name' => $product['name'],
+            'product_manufacturer' => $manufacturerName,
             'product_price' => $product['price'],
+            'product_regular_price' => $regularPrice,
             'product_price_amount' => $product['price_amount'],
             'product_currency' => $this->context->currency->sign,
             'product_url' => $product['url'],
             'product_image' => $productImage,
             'product_variations' => $variations,
+            'product_color' => $colorValue,
             'button_text' => $buttonText,
             'show_image' => Configuration::get('STICKY_ATC_SHOW_IMAGE'),
             'show_variations' => Configuration::get('STICKY_ATC_SHOW_VARIATIONS'),

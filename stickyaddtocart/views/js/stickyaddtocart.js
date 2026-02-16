@@ -11,6 +11,9 @@
     const stickyBar = document.getElementById("sticky-add-to-cart");
     const stickyBtn = document.querySelector(".sticky-add-btn");
     const successMessage = document.querySelector(".sticky-success-message");
+    const qtyInput = document.querySelector(".sticky-qty-input");
+    const qtyMinus = document.querySelector(".qty-minus");
+    const qtyPlus = document.querySelector(".qty-plus");
 
     if (!stickyBar || !stickyBtn) {
       return;
@@ -45,6 +48,20 @@
     }
 
     /**
+     * Quantity Selector Logic
+     */
+    if (qtyMinus && qtyPlus && qtyInput) {
+      qtyMinus.addEventListener("click", function () {
+        const val = parseInt(qtyInput.value);
+        if (val > 1) qtyInput.value = val - 1;
+      });
+      qtyPlus.addEventListener("click", function () {
+        const val = parseInt(qtyInput.value);
+        qtyInput.value = val + 1;
+      });
+    }
+
+    /**
      * Listen for PrestaShop events to manage loading state
      */
     if (typeof prestashop !== "undefined" && prestashop.on) {
@@ -53,6 +70,43 @@
       });
       prestashop.on("handleError", function () {
         stickyBtn.classList.remove("loading");
+      });
+
+      // Update sticky bar when product combination changes
+      prestashop.on("updatedProduct", function (event) {
+        if (!event || !event.product_minimal_quantity) return;
+
+        // Update price
+        const currentPrice = document.querySelector(".sticky-current-price");
+        const mobilePrice = document.querySelector(".sticky-mobile-price");
+        if (currentPrice && event.product_prices.price) {
+          currentPrice.textContent = event.product_prices.price;
+        }
+        if (mobilePrice && event.product_prices.price) {
+          mobilePrice.textContent = event.product_prices.price;
+        }
+
+        // Update regular price
+        const regularPrice = document.querySelector(".sticky-regular-price");
+        if (regularPrice) {
+          if (event.product_prices.regular_price) {
+            regularPrice.textContent = event.product_prices.regular_price;
+            regularPrice.style.display = "block";
+          } else {
+            regularPrice.style.display = "none";
+          }
+        }
+
+        // Update image if switched
+        const img = stickyBar.querySelector(".sticky-product-image img");
+        if (img && event.product_cover) {
+          img.src = event.product_cover.bySize.small_default.url;
+        }
+
+        // Update variations text/color if possible
+        // Note: Logic here depends on how the theme sends attribute info in event.
+        // For simplicity, we can let the page refresh handle it if the theme does full refresh,
+        // or try to parse combination details if provided.
       });
     }
 
@@ -67,14 +121,27 @@
         return;
       }
 
-      // 1. Try to find the native theme "Add to Cart" button
+      const qty = qtyInput ? parseInt(qtyInput.value) : 1;
+
+      // 1. Try to find the native theme "Add to Cart" button and quantity input
       const mainForm = document.querySelector("#add-to-cart-or-refresh");
+      const nativeQtyInput = mainForm
+        ? mainForm.querySelector('input[name="qty"]')
+        : null;
       const nativeBtn = mainForm
         ? mainForm.querySelector('[data-button-action="add-to-cart"]')
         : null;
 
       if (nativeBtn) {
         stickyBtn.classList.add("loading");
+
+        // Sync quantity to native input if exists
+        if (nativeQtyInput) {
+          nativeQtyInput.value = qty;
+          // Trigger change event just in case
+          const changeEvt = new Event("change", { bubbles: true });
+          nativeQtyInput.dispatchEvent(changeEvt);
+        }
 
         // Trigger click on the native button
         if (typeof jQuery !== "undefined") {
@@ -102,7 +169,7 @@
 
       const data = {
         id_product: productId,
-        qty: 1,
+        qty: qty,
         action: "update",
         add: 1,
         ajax: true,

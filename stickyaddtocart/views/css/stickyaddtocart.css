@@ -1,45 +1,61 @@
 /**
- * Sticky Add to Cart - Styles
- * PrestaShop 1.7 Module
+ * Sticky Add to Cart - Redesigned Styles
+ * Perfectly matching the provided design images
  */
 
-/* Main sticky container */
+:root {
+  --sticky-pink: #ed1c6f;
+  --sticky-pink-text: #f72c84;
+  --sticky-grey-light: #eeeeee;
+  --sticky-grey-text: #666666;
+  --sticky-grey-muted: #9b9b9b;
+  --sticky-black: #333333;
+  --sticky-brand-color: #fe889f;
+}
+
+/* Global Sticky Bar */
 .sticky-add-to-cart {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   background: #ffffff;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
+  box-shadow: 0 -2px 15px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
   transform: translateY(100%);
-  transition: transform 0.3s ease-in-out;
-  border-top: 1px solid #e5e5e5;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-top: 1px solid #f0f0f0;
 }
 
 .sticky-add-to-cart.visible {
   transform: translateY(0);
 }
 
-/* Container layout */
 .sticky-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 15px 20px;
-  gap: 15px;
+  height: 80px;
 }
 
-/* Product image */
+/* 1. Left Section: Product Details */
+.sticky-product-details {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 35%;
+  min-width: 0;
+}
+
 .sticky-product-image {
   flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  border-radius: 4px;
+  width: 55px;
+  height: 55px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e5e5e5;
+  border: 1px solid #f0f0f0;
 }
 
 .sticky-product-image img {
@@ -48,223 +64,308 @@
   object-fit: cover;
 }
 
-/* Product info section */
 .sticky-product-info {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  flex: 1;
   min-width: 0;
 }
 
+.sticky-product-brand {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sticky-brand-color);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 2px;
+}
+
+.sticky-name-variation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .sticky-product-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--sticky-black);
   text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sticky-separator {
+  color: #ccc;
+  font-weight: 300;
+  margin: 0 2px;
+}
+
+.sticky-color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  border: 2px solid #fff;
 }
 
 .sticky-product-variations {
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 14px;
+  color: #777;
+  font-weight: 400;
 }
 
-.sticky-product-price {
-  font-size: 18px;
+/* 2. Center Section: Pricing */
+.sticky-product-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 30%;
+  text-align: center;
+}
+
+.sticky-price-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.sticky-regular-price {
+  font-size: 14px;
+  color: #999;
+  text-decoration: line-through;
+  margin-bottom: 5px;
+}
+
+.sticky-current-price {
+  font-size: 22px;
   font-weight: 700;
-  color: #25b9d7;
+  color: var(--sticky-pink);
 }
 
-/* Actions section */
+.sticky-price-tax {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* 3. Right Section: Actions */
 .sticky-actions {
-  flex-shrink: 0;
+  width: 35%;
+  display: flex;
+  justify-content: flex-end;
 }
 
-/* Add to cart button */
-.sticky-add-btn {
+.sticky-unified-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
+  gap: 15px;
+}
+
+/* Desktop Quantity Selector */
+.sticky-qty-selector {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  height: 44px;
+  overflow: hidden;
+}
+
+.qty-btn {
+  background: none;
   border: none;
-  border-radius: 4px;
+  width: 32px;
+  height: 100%;
   cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  background-color: #25b9d7;
-  color: #ffffff;
+  color: #999;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
 }
 
-.sticky-add-btn:hover {
-  background-color: #1fa3bf;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(37, 185, 215, 0.3);
+.qty-btn:hover {
+  background: #f8f8f8;
 }
 
-.sticky-add-btn:active {
-  transform: translateY(0);
+.sticky-qty-input {
+  width: 35px;
+  height: 100%;
+  border: none;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--sticky-black);
+  padding: 0;
 }
 
-.sticky-add-btn.loading {
-  opacity: 0.7;
-  cursor: not-allowed;
-  pointer-events: none;
+/* Primary Add Button (DESKTOP) */
+.sticky-add-btn {
+  background: var(--sticky-pink) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 0 30px !important;
+  height: 44px;
+  font-weight: 700 !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+  text-transform: uppercase !important;
 }
 
-.sticky-add-btn .material-icons {
-  font-size: 20px;
+.sticky-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* Loading state */
-.sticky-add-btn.loading::after {
-  content: "";
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-left: 8px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 0.6s linear infinite;
+.sticky-btn-content i {
+  font-size: 22px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+.sticky-btn-text {
+  font-size: 15px;
 }
 
-/* Success message */
+.sticky-mobile-price {
+  display: none;
+}
+
+/* Success Message */
 .sticky-success-message {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #28a745;
-  color: #ffffff;
-  padding: 12px 24px;
-  border-radius: 4px;
+  top: -65px;
+  right: 20px;
+  background: #2cb34a;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-  animation: slideIn 0.3s ease;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  z-index: 1001;
 }
 
-.sticky-success-message .material-icons {
-  font-size: 24px;
+/* -------------------------------------------------------------------------- */
+/* MOBILE DESIGN                                                              */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 991px) {
+  .sticky-container { padding: 12px 15px; height: 70px; }
+  .sticky-product-name { font-size: 14px; }
+  .sticky-current-price { font-size: 18px; }
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
+@media (max-width: 767px) {
+  .sticky-add-to-cart {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0 12px 12px;
+    transform: translateY(120%);
   }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+  
+  .sticky-add-to-cart.visible {
+    transform: translateY(0);
   }
-}
 
-/* Responsive Design */
-
-/* Tablet */
-@media (max-width: 768px) {
   .sticky-container {
-    padding: 12px 15px;
+    padding: 0;
+    height: auto;
   }
 
-  .sticky-product-image {
-    width: 50px;
-    height: 50px;
-  }
-
-  .sticky-product-name {
-    font-size: 13px;
-  }
-
-  .sticky-product-variations {
-    font-size: 11px;
-  }
-
-  .sticky-product-price {
-    font-size: 16px;
-  }
-
-  .sticky-add-btn {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
-
-/* Mobile */
-@media (max-width: 576px) {
-  .sticky-container {
-    padding: 10px 12px;
-    gap: 10px;
-  }
-
-  .sticky-product-image {
-    width: 45px;
-    height: 45px;
-  }
-
-  .sticky-product-info {
-    gap: 3px;
-  }
-
-  .sticky-product-name {
-    font-size: 12px;
-  }
-
-  .sticky-product-variations {
+  .sticky-product-details, 
+  .sticky-product-pricing {
     display: none;
   }
 
-  .sticky-product-price {
-    font-size: 14px;
+  .sticky-actions {
+    width: 100%;
+  }
+
+  .sticky-unified-pill {
+    width: 100%;
+    background: var(--sticky-pink);
+    border-radius: 12px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(237, 28, 111, 0.4);
+  }
+
+  /* Mobile Qty Selector */
+  .sticky-qty-selector {
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 0;
+    height: 35px;
+    padding: 0 15px;
+    margin: 0;
+    width: auto;
+  }
+
+  .qty-btn { display: none; }
+  
+  .sticky-qty-input {
+    background: transparent;
+    color: #fff;
+    width: 25px;
+    font-size: 18px;
+    pointer-events: none;
+  }
+  
+  .sticky-qty-selector::after {
+    content: '⌵';
+    color: #fff;
+    font-size: 12px;
+    margin-left: 2px;
+    opacity: 0.8;
   }
 
   .sticky-add-btn {
-    padding: 8px 16px;
-    font-size: 13px;
-    gap: 6px;
+    flex: 1;
+    background: transparent !important;
+    height: 100%;
+    padding: 0 20px !important;
+    border-radius: 0 !important;
+    text-transform: none !important;
   }
 
-  .sticky-add-btn .material-icons {
-    font-size: 18px;
+  .sticky-btn-content {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .sticky-btn-content i {
+    font-size: 26px;
+    margin-right: 10px;
   }
 
   .sticky-btn-text {
-    display: none;
+    flex: 1;
+    font-size: 16px;
+    text-align: left;
+    white-space: nowrap;
   }
 
-  .sticky-success-message {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
-
-/* Small mobile devices */
-@media (max-width: 360px) {
-  .sticky-product-image {
-    width: 40px;
-    height: 40px;
-  }
-
-  .sticky-product-name {
-    max-width: 100px;
-  }
-
-  .sticky-add-btn {
-    padding: 8px 12px;
+  .sticky-mobile-price {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    margin-left: 10px;
   }
 }
