@@ -6,7 +6,7 @@
  * @author    iliass haidi
  * @copyright Copyright (c) 2026
  * @license   MIT License
- * @version   1.0.0
+ * @version   1.0.1
  */
 
 if (!defined('_PS_VERSION_')) {
