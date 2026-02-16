@@ -45,7 +45,20 @@
     }
 
     /**
-     * Add product to cart via AJAX
+     * Listen for PrestaShop events to manage loading state
+     */
+    if (typeof prestashop !== "undefined" && prestashop.on) {
+      prestashop.on("updateCart", function () {
+        stickyBtn.classList.remove("loading");
+      });
+      prestashop.on("handleError", function () {
+        stickyBtn.classList.remove("loading");
+      });
+    }
+
+    /**
+     * Add product to cart by triggering the native theme button if possible,
+     * otherwise fallback to AJAX.
      */
     function addToCart(event) {
       event.preventDefault();
@@ -54,129 +67,112 @@
         return;
       }
 
-      const productId = stickyBtn.getAttribute("data-product-id");
-      const token = stickyBtn.getAttribute("data-token");
+      // 1. Try to find the native theme "Add to Cart" button
+      const mainForm = document.querySelector("#add-to-cart-or-refresh");
+      const nativeBtn = mainForm
+        ? mainForm.querySelector('[data-button-action="add-to-cart"]')
+        : null;
 
-      // Add loading state
+      if (nativeBtn) {
+        stickyBtn.classList.add("loading");
+
+        // Trigger click on the native button
+        if (typeof jQuery !== "undefined") {
+          jQuery(nativeBtn).trigger("click");
+        } else {
+          const clickEvt = new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          });
+          nativeBtn.dispatchEvent(clickEvt);
+        }
+
+        // Safety timeout
+        setTimeout(() => stickyBtn.classList.remove("loading"), 5000);
+        return;
+      }
+
+      // 2. Fallback AJAX logic
+      const productId = parseInt(stickyBtn.getAttribute("data-product-id"));
+      const token = stickyBtn.getAttribute("data-token");
+      let productAttributeId = 0;
+
       stickyBtn.classList.add("loading");
 
-      // Prepare form data
-      const formData = new FormData();
-      formData.append("id_product", productId);
-      formData.append("qty", 1);
-      formData.append("action", "update");
-      formData.append("add", 1);
-      formData.append("ajax", true);
+      const data = {
+        id_product: productId,
+        qty: 1,
+        action: "update",
+        add: 1,
+        ajax: true,
+        token:
+          token ||
+          (typeof prestashop !== "undefined" ? prestashop.static_token : ""),
+      };
+
+      if (mainForm) {
+        const attrInput = mainForm.querySelector(
+          'input[name="id_product_attribute"]',
+        );
+        if (attrInput) productAttributeId = parseInt(attrInput.value);
+        data.id_product_attribute = productAttributeId;
+      }
 
       const addToCartUrl = stickyBtn.getAttribute("data-add-url");
 
-      // Add PrestaShop security token (try from data attribute, then global)
-      if (token) {
-        formData.append("token", token);
-      } else if (typeof prestashop !== "undefined" && prestashop.static_token) {
-        formData.append("token", prestashop.static_token);
-      }
-
-      // Get the main add to cart form if it exists (for product customization)
-      const mainForm = document.querySelector("#add-to-cart-or-refresh");
-      if (mainForm) {
-        // Get product attribute if selected
-        const productAttribute = mainForm.querySelector(
-          'input[name="id_product_attribute"]',
-        );
-        if (productAttribute && productAttribute.value) {
-          formData.append("id_product_attribute", productAttribute.value);
-        }
-
-        // Get customization fields if any
-        const customizationFields = mainForm.querySelectorAll(
-          'input[name^="id_customization"]',
-        );
-        customizationFields.forEach(function (field) {
-          formData.append(field.name, field.value);
-        });
-      }
-
-      // PrestaShop 1.7 uses prestashop object for AJAX cart updates
-      fetch(addToCartUrl, {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-        },
-      })
-        .then(function (response) {
-          if (!response.ok) {
-            throw response;
-          }
-          return response.json();
+      if (typeof jQuery !== "undefined") {
+        jQuery
+          .post(addToCartUrl, data, null, "json")
+          .done(function (resp) {
+            stickyBtn.classList.remove("loading");
+            if (resp.hasError) {
+              alert(resp.errors.join("\n"));
+              return;
+            }
+            showSuccessMessage();
+            if (typeof prestashop !== "undefined" && prestashop.emit) {
+              prestashop.emit("updateCart", {
+                reason: {
+                  idProduct: productId,
+                  idProductAttribute: productAttributeId,
+                  linkAction: "add-to-cart",
+                  cart: resp.cart,
+                },
+                resp: resp,
+              });
+            }
+          })
+          .fail(function () {
+            stickyBtn.classList.remove("loading");
+            alert("An error occurred. Please try again.");
+          });
+      } else {
+        const formData = new FormData();
+        for (const key in data) formData.append(key, data[key]);
+        fetch(addToCartUrl, {
+          method: "POST",
+          body: formData,
+          headers: { "X-Requested-With": "XMLHttpRequest" },
         })
-        .then(function (data) {
-          // Remove loading state
-          stickyBtn.classList.remove("loading");
-
-          if (data.hasError) {
-            console.error("Cart update error:", data.errors);
-            alert("Error: " + data.errors.join("\n"));
-            return;
-          }
-
-          // Show success message
-          showSuccessMessage();
-
-          // Trigger PrestaShop cart update event
-          if (typeof prestashop !== "undefined" && prestashop.emit) {
-            prestashop.emit("updateCart", {
-              reason: {
-                idProduct: productId,
-                idProductAttribute: formData.get("id_product_attribute") || 0,
-                linkAction: "add-to-cart",
-                cart: data.cart,
-              },
-              resp: data,
-            });
-          }
-
-          // Update cart preview (if blockcart module is active)
-          if (typeof prestashop !== "undefined" && prestashop.blockcart) {
-            prestashop.blockcart.showModal();
-          }
-        })
-        .catch(function (error) {
-          console.error("Error adding to cart:", error);
-          stickyBtn.classList.remove("loading");
-
-          // Use a generic error message by default
-          let errorMessage = "An error occurred. Please try again.";
-
-          // Try to extract more specific error info
-          if (error instanceof Response) {
-            // If it's a fetch response object
-            error.text().then((text) => {
-              console.error("Response text:", text);
-              try {
-                // Try to parse as JSON error
-                const jsonError = JSON.parse(text);
-                if (jsonError.errors && jsonError.errors.length > 0) {
-                  alert("Error: " + jsonError.errors.join("\n"));
-                } else {
-                  alert(
-                    "Server Error: " + error.status + " " + error.statusText,
-                  );
-                }
-              } catch (e) {
-                // Fallback for non-JSON errors (like 500 HTML pages)
-                alert("Server Error: " + error.status + " " + error.statusText);
-              }
-            });
-            return;
-          } else if (error.message) {
-            // JS Error
-            errorMessage += "\nDetails: " + error.message;
-          }
-
-          alert(errorMessage);
-        });
+          .then((res) => res.json())
+          .then((resp) => {
+            stickyBtn.classList.remove("loading");
+            showSuccessMessage();
+            if (typeof prestashop !== "undefined" && prestashop.emit) {
+              prestashop.emit("updateCart", {
+                reason: {
+                  idProduct: productId,
+                  idProductAttribute: productAttributeId,
+                  linkAction: "add-to-cart",
+                  cart: resp.cart,
+                },
+                resp: resp,
+              });
+            }
+          })
+          .catch(() => stickyBtn.classList.remove("loading"));
+      }
     }
 
     /**
