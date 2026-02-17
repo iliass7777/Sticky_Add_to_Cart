@@ -508,8 +508,14 @@ class StickyAddToCart extends Module
             .sticky-add-btn:hover {
                 background-color: {$buttonHover} !important;
             }
-            .sticky-product-price {
+            .sticky-current-price {
                 color: {$priceColor} !important;
+            }
+            @media (max-width: 767px) {
+                .sticky-unified-pill {
+                    background: {$buttonColor} !important;
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+                }
             }
             {$customCSS}
         ";
@@ -602,11 +608,21 @@ class StickyAddToCart extends Module
 
         // Try to get a color attribute for the swatch
         $colorValue = '';
+        $variationImage = '';
         if (isset($product['attributes']) && is_array($product['attributes'])) {
+            // In PrestaShop 1.7+, attributes are often grouped. 
+            // We'll iterate through all of them to find a color group.
             foreach ($product['attributes'] as $attr) {
+                // Check if this attribute belongs to a color group
                 if (isset($attr['group_type']) && $attr['group_type'] === 'color') {
-                    $colorValue = $attr['html_color_code'];
-                    break;
+                    if (!empty($attr['texture'])) {
+                        $variationImage = $attr['texture'];
+                        $colorValue = ''; // Texture takes precedence
+                        break;
+                    } elseif (!empty($attr['html_color_code'])) {
+                        $colorValue = $attr['html_color_code'];
+                        break;
+                    }
                 }
             }
         }
@@ -624,6 +640,7 @@ class StickyAddToCart extends Module
             'product_image' => $productImage,
             'product_variations' => $variations,
             'product_color' => $colorValue,
+            'variation_image' => $variationImage,
             'button_text' => $buttonText,
             'show_image' => Configuration::get('STICKY_ATC_SHOW_IMAGE'),
             'show_variations' => Configuration::get('STICKY_ATC_SHOW_VARIATIONS'),

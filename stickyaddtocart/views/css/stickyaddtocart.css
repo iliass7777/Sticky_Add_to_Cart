@@ -2,7 +2,12 @@
  * Sticky Add to Cart - Redesigned Styles
  * Perfectly matching the provided design images
  */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
+.sticky-add-to-cart, 
+.sticky-add-to-cart * {
+  font-family: 'Montserrat', sans-serif !important;
+}
 :root {
   --sticky-pink: #ed1c6f;
   --sticky-pink-text: #f72c84;
@@ -95,18 +100,28 @@
 }
 
 .sticky-separator {
-  color: #ccc;
+  color: #dddddd;
   font-weight: 300;
-  margin: 0 2px;
+  margin: 0 5px;
+  font-size: 18px;
 }
 
-.sticky-color-swatch {
+.sticky-swatch {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
   flex-shrink: 0;
   border: 2px solid #fff;
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.sticky-image-swatch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .sticky-product-variations {
@@ -139,6 +154,12 @@
   margin-bottom: 5px;
 }
 
+.sticky-current-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .sticky-current-price {
   font-size: 22px;
   font-weight: 700;
@@ -149,7 +170,6 @@
   font-size: 11px;
   color: #999;
   text-transform: uppercase;
-  margin-top: 4px;
 }
 
 /* 3. Right Section: Actions */
@@ -170,39 +190,72 @@
   display: flex;
   align-items: center;
   background: #fff;
-  border: 1px solid #dcdcdc;
-  border-radius: 5px;
-  height: 44px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  height: 34px;
   overflow: hidden;
 }
 
 .qty-btn {
   background: none;
   border: none;
-  width: 32px;
+  width: 50px;
   height: 100%;
   cursor: pointer;
   color: #999;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 400;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
+  position: relative;
 }
 
 .qty-btn:hover {
   background: #f8f8f8;
+  color: #666;
+}
+
+.qty-minus::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 60%;
+  background: #d0d0d0;
+}
+
+.qty-plus::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 60%;
+  background: #d0d0d0;
 }
 
 .sticky-qty-input {
-  width: 35px;
+  width: 50px;
   height: 100%;
   border: none;
   text-align: center;
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 500;
+  font-size: 16px;
   color: var(--sticky-black);
   padding: 0;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.sticky-qty-input::-webkit-outer-spin-button,
+.sticky-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* Primary Add Button (DESKTOP) */
@@ -219,7 +272,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: none !important;
-  text-transform: uppercase !important;
+  text-transform: none !important;
 }
 
 .sticky-btn-content {
@@ -228,8 +281,12 @@
   gap: 10px;
 }
 
-.sticky-btn-content i {
+.sticky-btn-content i,
+.sticky-btn-content svg {
   font-size: 22px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .sticky-btn-text {
@@ -295,14 +352,12 @@
 
   .sticky-unified-pill {
     width: 100%;
-    background: var(--sticky-pink);
     border-radius: 12px;
     height: 60px;
     display: flex;
     align-items: center;
     gap: 0;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(237, 28, 111, 0.4);
   }
 
   /* Mobile Qty Selector */
@@ -350,14 +405,17 @@
     gap: 0;
   }
 
-  .sticky-btn-content i {
+  .sticky-btn-content i,
+  .sticky-btn-content svg {
     font-size: 26px;
+    width: 26px;
+    height: 26px;
     margin-right: 10px;
   }
 
   .sticky-btn-text {
     flex: 1;
-    font-size: 16px;
+    font-size: 14px;
     text-align: left;
     white-space: nowrap;
   }
@@ -367,5 +425,70 @@
     font-size: 17px;
     font-weight: 700;
     margin-left: 10px;
+  }
+
+  /* Mobile Quantity Dropdown */
+  .sticky-qty-dropdown {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    padding: 0 12px 12px;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .sticky-qty-dropdown-list {
+    background: white;
+    border-radius: 12px 12px 0 0;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .sticky-qty-option {
+    padding: 16px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
+  }
+
+  .sticky-qty-option:last-child {
+    border-bottom: none;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .sticky-qty-option:first-child {
+    border-radius: 12px 12px 0 0;
+  }
+
+  .sticky-qty-option:active {
+    background: #f8f8f8;
+  }
+
+  .sticky-qty-option.selected {
+    background: #f0f0f0;
+    color: var(--sticky-pink);
+    font-weight: 700;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Make qty selector clickable on mobile */
+  .sticky-qty-selector {
+    cursor: pointer;
+    user-select: none;
   }
 }

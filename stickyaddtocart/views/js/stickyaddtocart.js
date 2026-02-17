@@ -62,6 +62,57 @@
     }
 
     /**
+     * Mobile Quantity Dropdown Logic
+     */
+    const qtySelector = document.querySelector(".sticky-qty-selector");
+    const qtyDropdown = document.querySelector(".sticky-qty-dropdown");
+    const qtyOptions = document.querySelectorAll(".sticky-qty-option");
+
+    // Check if we're on mobile (max-width: 767px)
+    function isMobile() {
+      return window.innerWidth <= 767;
+    }
+
+    // Open dropdown on mobile when clicking qty selector
+    if (qtySelector && qtyDropdown && isMobile()) {
+      qtySelector.addEventListener("click", function (e) {
+        e.stopPropagation();
+        qtyDropdown.style.display = "block";
+        updateSelectedOption();
+      });
+
+      // Close dropdown when clicking outside
+      qtyDropdown.addEventListener("click", function (e) {
+        if (e.target === qtyDropdown) {
+          qtyDropdown.style.display = "none";
+        }
+      });
+
+      // Handle quantity option selection
+      qtyOptions.forEach(function (option) {
+        option.addEventListener("click", function () {
+          const selectedQty = parseInt(this.getAttribute("data-qty"));
+          qtyInput.value = selectedQty;
+          qtyDropdown.style.display = "none";
+          updateSelectedOption();
+        });
+      });
+
+      // Update selected option visual state
+      function updateSelectedOption() {
+        const currentQty = parseInt(qtyInput.value);
+        qtyOptions.forEach(function (option) {
+          const optionQty = parseInt(option.getAttribute("data-qty"));
+          if (optionQty === currentQty) {
+            option.classList.add("selected");
+          } else {
+            option.classList.remove("selected");
+          }
+        });
+      }
+    }
+
+    /**
      * Listen for PrestaShop events to manage loading state
      */
     if (typeof prestashop !== "undefined" && prestashop.on) {
@@ -103,10 +154,8 @@
           img.src = event.product_cover.bySize.small_default.url;
         }
 
-        // Update variations text/color if possible
-        // Note: Logic here depends on how the theme sends attribute info in event.
-        // For simplicity, we can let the page refresh handle it if the theme does full refresh,
-        // or try to parse combination details if provided.
+        // Update variations swatch (color or image)
+        updateVariationSwatch(event);
       });
     }
 
@@ -255,6 +304,81 @@
       setTimeout(function () {
         successMessage.style.display = "none";
       }, SUCCESS_MESSAGE_DURATION);
+    }
+
+    /**
+     * Update variation swatch when product combination changes
+     */
+    function updateVariationSwatch(event) {
+      // Find the variation container
+      const variationContainer = stickyBar.querySelector(
+        ".sticky-name-variation",
+      );
+      if (!variationContainer) return;
+
+      // Remove existing swatch elements
+      const existingSeparator =
+        variationContainer.querySelector(".sticky-separator");
+      const existingSwatch = variationContainer.querySelector(".sticky-swatch");
+      if (existingSeparator) existingSeparator.remove();
+      if (existingSwatch) existingSwatch.remove();
+
+      // Check if event has attribute groups
+      if (!event.product_details || !event.product_details.attributes) {
+        return;
+      }
+
+      // Look for color attribute in the attributes array
+      let colorValue = "";
+      let textureUrl = "";
+
+      // Iterate through attributes to find color group
+      for (let i = 0; i < event.product_details.attributes.length; i++) {
+        const attr = event.product_details.attributes[i];
+
+        // Check if this is a color attribute
+        if (
+          attr.group_type === "color" ||
+          attr.name.toLowerCase().includes("color") ||
+          attr.name.toLowerCase().includes("couleur")
+        ) {
+          // Texture/image takes precedence
+          if (attr.texture) {
+            textureUrl = attr.texture;
+            break;
+          } else if (attr.html_color_code) {
+            colorValue = attr.html_color_code;
+            break;
+          }
+        }
+      }
+
+      // If we found a color or texture, add the swatch
+      if (colorValue || textureUrl) {
+        // Add separator
+        const separator = document.createElement("span");
+        separator.className = "sticky-separator";
+        separator.textContent = "|";
+        variationContainer.appendChild(separator);
+
+        // Add swatch
+        if (textureUrl) {
+          // Image swatch
+          const swatch = document.createElement("span");
+          swatch.className = "sticky-swatch sticky-image-swatch";
+          const img = document.createElement("img");
+          img.src = textureUrl;
+          img.alt = "variation";
+          swatch.appendChild(img);
+          variationContainer.appendChild(swatch);
+        } else if (colorValue) {
+          // Color swatch
+          const swatch = document.createElement("span");
+          swatch.className = "sticky-swatch sticky-color-swatch";
+          swatch.style.backgroundColor = colorValue;
+          variationContainer.appendChild(swatch);
+        }
+      }
     }
 
     /**
