@@ -74,17 +74,23 @@
     }
 
     // Open dropdown on mobile when clicking qty selector
-    if (qtySelector && qtyDropdown && isMobile()) {
+    if (qtySelector && qtyDropdown) {
       qtySelector.addEventListener("click", function (e) {
+        // Only open dropdown on mobile
+        if (!isMobile()) return;
+
+        // Don't open if clicking nested buttons (relevant for hybrid states)
+        if (e.target.closest(".qty-btn")) return;
+
         e.stopPropagation();
-        qtyDropdown.style.display = "block";
+        qtyDropdown.classList.add("open");
         updateSelectedOption();
       });
 
       // Close dropdown when clicking outside
       qtyDropdown.addEventListener("click", function (e) {
         if (e.target === qtyDropdown) {
-          qtyDropdown.style.display = "none";
+          qtyDropdown.classList.remove("open");
         }
       });
 
@@ -93,7 +99,19 @@
         option.addEventListener("click", function () {
           const selectedQty = parseInt(this.getAttribute("data-qty"));
           qtyInput.value = selectedQty;
-          qtyDropdown.style.display = "none";
+          // Sync with native input if it exists
+          const mainForm = document.querySelector("#add-to-cart-or-refresh");
+          const nativeQtyInput = mainForm
+            ? mainForm.querySelector('input[name="qty"]')
+            : null;
+          if (nativeQtyInput) {
+            nativeQtyInput.value = selectedQty;
+            nativeQtyInput.dispatchEvent(
+              new Event("change", { bubbles: true }),
+            );
+          }
+
+          qtyDropdown.classList.remove("open");
           updateSelectedOption();
         });
       });

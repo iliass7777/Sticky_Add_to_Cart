@@ -185,6 +185,11 @@
   gap: 15px;
 }
 
+/* Ensure mobile dropdown is hidden on desktop */
+.sticky-qty-dropdown {
+  display: none !important;
+}
+
 /* Desktop Quantity Selector */
 .sticky-qty-selector {
   display: flex;
@@ -429,6 +434,11 @@
 
   /* Mobile Quantity Dropdown */
   .sticky-qty-dropdown {
+    display: none !important;
+  }
+  
+  .sticky-qty-dropdown.open {
+    display: block !important;
     position: fixed;
     bottom: 0;
     left: 0;
